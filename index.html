@@ -1,3 +1,4 @@
+<!-- START OF FILE user Wallet .html -->
 <!DOCTYPE html>
 <html lang="bn">
 <head>
@@ -54,79 +55,24 @@
         /* QR Specific Styles */
         #qrDisplay { display: flex; justify-content: center; margin: 20px 0; }
         
-        /* === UPDATED SCANNER STYLES === */
-        #reader { 
-            width: 100%; 
-            border-radius: 10px; 
-            overflow: hidden; 
-            background: #000;
-        }
-        #reader video {
-            object-fit: cover;
-            border-radius: 10px;
-        }
-        /* Hide default library text */
+        /* === SCANNER STYLES === */
+        #reader { width: 100%; border-radius: 10px; overflow: hidden; background: #000; }
+        #reader video { object-fit: cover; border-radius: 10px; }
         #reader__dashboard_section_swaplink { display: none !important; }
         #reader__dashboard_section_csr span { display: none !important; }
-        /* Style library buttons */
-        #reader button {
-            background: #e2136e !important;
-            color: white !important;
-            border: none !important;
-            padding: 8px 15px !important;
-            border-radius: 20px !important;
-            margin: 5px !important;
-            font-size: 12px !important;
-            cursor: pointer;
-        }
-        #reader select {
-            padding: 5px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-        }
+        #reader button { background: #e2136e !important; color: white !important; border: none !important; padding: 8px 15px !important; border-radius: 20px !important; margin: 5px !important; font-size: 12px !important; cursor: pointer; }
 
         /* === BOTTOM FLOATING BUTTON STYLE === */
         .bottom-scan-area {
-            position: absolute;
-            bottom: 25px;
-            left: 0;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            pointer-events: none; /* Allows clicking behind the empty space */
-            z-index: 50;
+            position: absolute; bottom: 25px; left: 0; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; z-index: 50;
         }
         .scan-fab {
-            pointer-events: auto;
-            width: 70px;
-            height: 70px;
-            background: #e2136e;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 30px;
-            box-shadow: 0 4px 15px rgba(226, 19, 110, 0.4);
-            border: 4px solid #fff;
-            cursor: pointer;
-            transition: transform 0.2s;
+            pointer-events: auto; width: 70px; height: 70px; background: #e2136e; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 30px; box-shadow: 0 4px 15px rgba(226, 19, 110, 0.4); border: 4px solid #fff; cursor: pointer; transition: transform 0.2s;
         }
         .scan-fab:active { transform: scale(0.90); }
         .scan-text {
-            color: #e2136e;
-            font-weight: bold;
-            font-size: 14px;
-            margin-top: 5px;
-            text-shadow: 0 1px 2px rgba(255,255,255,1);
-            background: rgba(255,255,255,0.8);
-            padding: 2px 8px;
-            border-radius: 10px;
+            color: #e2136e; font-weight: bold; font-size: 14px; margin-top: 5px; text-shadow: 0 1px 2px rgba(255,255,255,1); background: rgba(255,255,255,0.8); padding: 2px 8px; border-radius: 10px;
         }
-        
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
@@ -230,17 +176,14 @@
         </div>
     </div>
 
-    <!-- UPDATED SCANNER MODAL -->
+    <!-- SCANNER MODAL -->
     <div id="scannerModal" class="modal">
         <div class="modal-box" style="padding:15px; background: #fff;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                 <h3 style="color:#e2136e; margin:0;">Scan & Pay</h3>
                 <i class="fas fa-times" style="font-size:20px; cursor:pointer; color:#555;" onclick="closeScanner()"></i>
             </div>
-            <!-- The Scanner Container -->
             <div id="reader" style="width: 100%; min-height: 250px;"></div>
-            
-            <p style="text-align:center; font-size:12px; color:#888; margin-top:10px;">Point camera at a User QR Code</p>
         </div>
     </div>
 
@@ -254,7 +197,9 @@
             <div id="secSend" style="display:none;">
                 <label>Receiver Info</label>
                 <input type="text" id="inReceiver" placeholder="Receiver Username">
-                <input type="number" id="inAmountS" placeholder="Amount">
+                <input type="number" id="inAmountS" placeholder="Amount" oninput="calcSendFee()">
+                <p id="sendFeeDisplay" style="color:orange; font-size:12px; font-weight:bold;"></p>
+                <small id="sendLimitMsg" style="color:#888; display:block; margin-bottom:10px;"></small>
             </div>
 
             <div id="secRequest" style="display:none;"><input type="text" id="inReqUser" placeholder="From Username"><input type="number" id="inReqAmount" placeholder="Amount"></div>
@@ -262,8 +207,9 @@
             <div id="secWithdraw" style="display:none;">
                 <label>Method:</label><select id="inWMethod"><option>Loading...</option></select>
                 <input type="text" id="inWNumber" placeholder="Wallet Number">
-                <input type="number" id="inAmountW" placeholder="Amount">
-                <p style="color:red; font-size:11px;">* 2% Fee will be deducted</p>
+                <input type="number" id="inAmountW" placeholder="Amount" oninput="calcWithdrawFee()">
+                <p id="withdrawFeeDisplay" style="color:red; font-size:12px; font-weight:bold;"></p>
+                <small id="withdrawLimitMsg" style="color:#888; display:block; margin-bottom:10px;"></small>
             </div>
 
             <div id="secProfile" style="display:none;">
@@ -308,6 +254,14 @@
     let curPhone = null, curUser = null, curAction = "";
     let storedRealPhone = null;
     let html5QrcodeScanner = null;
+    
+    // Default Settings
+    let settings = { 
+        minSend: 10, maxSend: 25000, 
+        minWithdraw: 100, maxWithdraw: 10000, 
+        withdrawFee: 2.0, 
+        sendSlabs: [] 
+    };
 
     function maskNum(n) {
         if(!n || n.length < 5) return n;
@@ -384,19 +338,57 @@
         document.getElementById('authView').style.display='none'; document.getElementById('walletView').style.display='flex';
         document.getElementById('dName').innerText = curUser.name; document.getElementById('dUser').innerText = "@"+curUser.username;
         document.getElementById('dPic').src = curUser.profilePic;
+        
+        // FETCH SETTINGS
         db.collection('admin').doc('settings').onSnapshot(doc => {
-            const methods = doc.exists ? (doc.data().methods||[]) : [];
-            const sel = document.getElementById('inWMethod'); sel.innerHTML = "";
-            methods.forEach(m => sel.innerHTML += `<option value="${m}">${m}</option>`);
+            if(doc.exists) {
+                const s = doc.data();
+                settings = { ...settings, ...s };
+                
+                // Update UI Limits Text
+                document.getElementById('withdrawLimitMsg').innerText = `Limit: ${settings.minWithdraw} - ${settings.maxWithdraw} Tk`;
+                document.getElementById('sendLimitMsg').innerText = `Limit: ${settings.minSend} - ${settings.maxSend} Tk`;
+                
+                const methods = s.methods || [];
+                const sel = document.getElementById('inWMethod'); sel.innerHTML = "";
+                methods.forEach(m => sel.innerHTML += `<option value="${m}">${m}</option>`);
+            }
         });
+        
         db.collection('users').doc(curPhone).onSnapshot(doc => {
             curUser = doc.data();
             document.getElementById('dBal').innerText = `৳ ${curUser.balance.toFixed(2)}`;
         });
     }
 
-    // === UPDATED QR CODE FUNCTIONS ===
-    
+    // === FEE CALCULATORS ===
+    function calcSendFee() {
+        const amt = parseFloat(document.getElementById('inAmountS').value);
+        if(!amt) { document.getElementById('sendFeeDisplay').innerText = "Fee: 0 Tk"; return 0; }
+        
+        let fee = 0;
+        if(settings.sendSlabs && settings.sendSlabs.length > 0) {
+            for(let slab of settings.sendSlabs) {
+                if(amt >= slab.from && amt <= slab.to) {
+                    fee = slab.fee;
+                    break;
+                }
+            }
+        }
+        document.getElementById('sendFeeDisplay').innerText = `Fee: ${fee} Tk (Total: ${amt+fee})`;
+        return fee;
+    }
+
+    function calcWithdrawFee() {
+        const amt = parseFloat(document.getElementById('inAmountW').value);
+        if(!amt) { document.getElementById('withdrawFeeDisplay').innerText = ""; return 0; }
+        
+        const fee = amt * (settings.withdrawFee / 100);
+        document.getElementById('withdrawFeeDisplay').innerText = `Fee (${settings.withdrawFee}%): ${fee.toFixed(2)} Tk (Total: ${(amt+fee).toFixed(2)})`;
+        return fee;
+    }
+
+    // === QR CODE FUNCTIONS ===
     function showMyQr() {
         document.getElementById('myQrModal').style.display = 'flex';
         const qrContainer = document.getElementById('qrDisplay');
@@ -407,32 +399,14 @@
 
     function openScanner() {
         document.getElementById('scannerModal').style.display = 'flex';
-        
-        // Config for better performance
-        const config = { 
-            fps: 20, // Faster scanning
-            qrbox: { width: 250, height: 250 }, 
-            aspectRatio: 1.0 
-        };
-        
-        // Start Scanner
-        html5QrcodeScanner = new Html5QrcodeScanner("reader", config, /* verbose= */ false);
+        const config = { fps: 20, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 };
+        html5QrcodeScanner = new Html5QrcodeScanner("reader", config, false);
         html5QrcodeScanner.render(onScanSuccess);
     }
 
-    function onScanSuccess(decodedText, decodedResult) {
-        // Play a beep sound (Optional)
-        // const audio = new Audio('beep.mp3'); audio.play().catch(e=>{});
-
-        console.log(`Code scanned = ${decodedText}`);
-        
-        // 1. Close Scanner
+    function onScanSuccess(decodedText) {
         closeScanner();
-        
-        // 2. Open Send Money Modal automatically
         openModal('send');
-        
-        // 3. Fill the receiver field
         document.getElementById('inReceiver').value = decodedText;
     }
 
@@ -441,15 +415,11 @@
             html5QrcodeScanner.clear().then(() => {
                 document.getElementById('scannerModal').style.display = 'none';
                 html5QrcodeScanner = null;
-            }).catch(error => {
-                console.error("Failed to clear scanner", error);
-                document.getElementById('scannerModal').style.display = 'none';
-            });
+            }).catch(() => document.getElementById('scannerModal').style.display = 'none');
         } else {
             document.getElementById('scannerModal').style.display = 'none';
         }
     }
-    // =========================
 
     function openTransactions() {
         document.getElementById('transModal').style.display = 'flex';
@@ -470,7 +440,7 @@
         });
         if(filtered.length === 0) list.innerHTML = "<p style='text-align:center; color:#888'>No transactions found.</p>";
         [...filtered].reverse().forEach(h => {
-            const color = h.amount > 0 ? 'green' : (h.type.includes('Withdraw') ? 'red' : 'orange');
+            const color = h.amount > 0 ? 'green' : (h.type.includes('Withdraw') || h.type.includes('Sent') ? 'red' : 'orange');
             const sign = h.amount > 0 ? '+' : '';
             let statusBadge = "";
             if(h.type.includes('Withdraw')) {
@@ -543,9 +513,15 @@
             const num = document.getElementById('inWNumber').value;
             const amt = parseFloat(document.getElementById('inAmountW').value);
             if(!num || !amt) return;
-            const fee = amt * 0.02;
+            
+            // Limit Check
+            if(amt < settings.minWithdraw || amt > settings.maxWithdraw) return alert(`Amount must be between ${settings.minWithdraw} and ${settings.maxWithdraw}`);
+
+            const fee = calcWithdrawFee();
             const totalDeduct = amt + fee;
-            if(!confirm(`Withdraw: ${amt} Tk\nFee (2%): ${fee} Tk\nTotal Deduct: ${totalDeduct} Tk\nProceed?`)) return;
+            
+            if(!confirm(`Withdraw: ${amt} Tk\nFee (${settings.withdrawFee}%): ${fee.toFixed(2)} Tk\nTotal: ${totalDeduct.toFixed(2)} Tk\nProceed?`)) return;
+            
             try {
                 await db.runTransaction(async t => {
                     const uRef = db.collection('users').doc(curPhone);
@@ -555,7 +531,7 @@
                     const wRef = db.collection('withdrawals').doc(tid);
                     t.set(wRef, { userId: curPhone, userName: curUser.name, userPhone: curPhone, profilePic: curUser.profilePic, method: m, number: num, amount: amt, fee: fee, totalDeduct: totalDeduct, status: 'Pending', date: new Date().toLocaleString(), timestamp: tid });
                     const hist = ud.data().history || [];
-                    hist.push({ title: `Withdraw: ${m} (${maskNum(num)})`, type: 'Withdraw', amount: -totalDeduct, status: 'Pending', txId: tid, date: new Date().toLocaleString() });
+                    hist.push({ title: `Withdraw: ${m} (${maskNum(num)})`, type: 'Withdraw', amount: -totalDeduct, status: 'Pending', txId: tid, fee: fee, date: new Date().toLocaleString() });
                     t.update(uRef, { balance: ud.data().balance - totalDeduct, history: hist });
                 });
                 alert("Withdraw Request Sent!"); closeModal();
@@ -569,6 +545,15 @@
              const rec = document.getElementById('inReceiver').value.trim();
              const amt = parseFloat(document.getElementById('inAmountS').value);
              if(!rec || !amt) return;
+
+             // Limit Check
+             if(amt < settings.minSend || amt > settings.maxSend) return alert(`Amount must be between ${settings.minSend} and ${settings.maxSend}`);
+
+             const fee = calcSendFee();
+             const totalDeduct = amt + fee;
+
+             if(!confirm(`Send: ${amt} Tk\nFee: ${fee} Tk\nTotal: ${totalDeduct} Tk\nProceed?`)) return;
+
              try {
                  const q = await db.collection('users').where('username', '==', rec).get();
                  if(q.empty) throw "User not found";
@@ -576,15 +561,24 @@
                  await db.runTransaction(async t => {
                      const uRef = db.collection('users').doc(curPhone);
                      const rRef = db.collection('users').doc(rPhone);
+                     const aRef = db.collection('admin').doc('stats');
+
                      const sd = await t.get(uRef);
-                     if(sd.data().balance < amt) throw "Low Balance";
+                     if(sd.data().balance < totalDeduct) throw "Low Balance";
+                     
                      const rd = await t.get(rRef);
+                     const ad = await t.get(aRef);
+                     const curFees = ad.exists ? (ad.data().totalFees || 0) : 0;
+
                      const sHist = sd.data().history || [];
-                     sHist.push({ title: 'Sent to @'+rec, type: 'Sent Money', amount: -amt, date: new Date().toLocaleString() });
+                     sHist.push({ title: 'Sent to @'+rec, type: 'Sent Money', amount: -totalDeduct, fee: fee, date: new Date().toLocaleString() });
+                     
                      const rHist = rd.data().history || [];
                      rHist.push({ title: 'From @'+curUser.username, type: 'Received Money', amount: amt, date: new Date().toLocaleString() });
-                     t.update(uRef, { balance: sd.data().balance - amt, history: sHist });
+                     
+                     t.update(uRef, { balance: sd.data().balance - totalDeduct, history: sHist });
                      t.update(rRef, { balance: rd.data().balance + amt, history: rHist });
+                     t.set(aRef, { totalFees: curFees + fee }, {merge:true});
                  });
                  alert("Sent!"); closeModal();
              } catch(e) { alert(e); }
