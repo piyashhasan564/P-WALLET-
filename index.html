@@ -53,7 +53,38 @@
         
         /* QR Specific Styles */
         #qrDisplay { display: flex; justify-content: center; margin: 20px 0; }
-        #reader { width: 100%; }
+        
+        /* === UPDATED SCANNER STYLES === */
+        #reader { 
+            width: 100%; 
+            border-radius: 10px; 
+            overflow: hidden; 
+            background: #000;
+        }
+        #reader video {
+            object-fit: cover;
+            border-radius: 10px;
+        }
+        /* Hide default library text */
+        #reader__dashboard_section_swaplink { display: none !important; }
+        #reader__dashboard_section_csr span { display: none !important; }
+        /* Style library buttons */
+        #reader button {
+            background: #e2136e !important;
+            color: white !important;
+            border: none !important;
+            padding: 8px 15px !important;
+            border-radius: 20px !important;
+            margin: 5px !important;
+            font-size: 12px !important;
+            cursor: pointer;
+        }
+        #reader select {
+            padding: 5px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+        }
 
         /* === BOTTOM FLOATING BUTTON STYLE === */
         .bottom-scan-area {
@@ -199,12 +230,17 @@
         </div>
     </div>
 
-    <!-- SCANNER MODAL -->
+    <!-- UPDATED SCANNER MODAL -->
     <div id="scannerModal" class="modal">
-        <div class="modal-box">
-            <h3 style="color:#e2136e;">Scan QR Code</h3>
-            <div id="reader"></div>
-            <button class="btn-main" style="background:#555; margin-top:10px;" onclick="closeScanner()">CLOSE</button>
+        <div class="modal-box" style="padding:15px; background: #fff;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h3 style="color:#e2136e; margin:0;">Scan & Pay</h3>
+                <i class="fas fa-times" style="font-size:20px; cursor:pointer; color:#555;" onclick="closeScanner()"></i>
+            </div>
+            <!-- The Scanner Container -->
+            <div id="reader" style="width: 100%; min-height: 250px;"></div>
+            
+            <p style="text-align:center; font-size:12px; color:#888; margin-top:10px;">Point camera at a User QR Code</p>
         </div>
     </div>
 
@@ -359,7 +395,7 @@
         });
     }
 
-    // === QR CODE FUNCTIONS ===
+    // === UPDATED QR CODE FUNCTIONS ===
     
     function showMyQr() {
         document.getElementById('myQrModal').style.display = 'flex';
@@ -371,12 +407,23 @@
 
     function openScanner() {
         document.getElementById('scannerModal').style.display = 'flex';
-        html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+        
+        // Config for better performance
+        const config = { 
+            fps: 20, // Faster scanning
+            qrbox: { width: 250, height: 250 }, 
+            aspectRatio: 1.0 
+        };
+        
+        // Start Scanner
+        html5QrcodeScanner = new Html5QrcodeScanner("reader", config, /* verbose= */ false);
         html5QrcodeScanner.render(onScanSuccess);
     }
 
     function onScanSuccess(decodedText, decodedResult) {
-        // Success: Close scanner and Open Send Money with filled data
+        // Play a beep sound (Optional)
+        // const audio = new Audio('beep.mp3'); audio.play().catch(e=>{});
+
         console.log(`Code scanned = ${decodedText}`);
         
         // 1. Close Scanner
@@ -394,7 +441,10 @@
             html5QrcodeScanner.clear().then(() => {
                 document.getElementById('scannerModal').style.display = 'none';
                 html5QrcodeScanner = null;
-            }).catch(error => console.error("Failed to clear scanner", error));
+            }).catch(error => {
+                console.error("Failed to clear scanner", error);
+                document.getElementById('scannerModal').style.display = 'none';
+            });
         } else {
             document.getElementById('scannerModal').style.display = 'none';
         }
