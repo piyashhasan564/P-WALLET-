@@ -120,7 +120,7 @@
 
         <div class="container">
             <div class="status-text">
-                <i class="fas fa-info-circle"></i> Showing Approved Users from Feb 28, 2026.<br>
+                <i class="fas fa-info-circle"></i> Showing Approved Users from <b>SL 270</b> onwards.<br>
                 Complete all 3 actions (Copy Name, Copy Batch, Save Pic) to automate removal.
             </div>
 
@@ -130,7 +130,7 @@
         </div>
     </div>
 
-    <!-- FIREBASE SCRIPTS (Auth Removed to Prevent Crash) -->
+    <!-- FIREBASE SCRIPTS -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, onSnapshot, query, where, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -148,9 +148,8 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // State Tracking for each user: { userId: { name: false, batch: false, pic: false } }
+        // State Tracking for each user
         let actionState = {};
-        const CUTOFF_DATE = new Date('2026-02-28T00:00:00').getTime();
         let usersListener = null;
 
         // --- REALTIME ACCESS CHECK (MASTER ADMIN SWITCH) ---
@@ -164,7 +163,7 @@
                     document.getElementById('disabledSection').style.display = 'none';
                     document.getElementById('mainContent').style.display = 'block';
                     
-                    // Start loading users if not already started
+                    // Start loading users
                     if (!usersListener) {
                         loadApprovedUsers();
                     }
@@ -173,12 +172,10 @@
                     document.getElementById('mainContent').style.display = 'none';
                     document.getElementById('disabledSection').style.display = 'flex';
                     
-                    // Update disabled message
                     document.getElementById('statusIcon').className = "fas fa-ban";
                     document.getElementById('statusTitle').innerText = "Access Disabled";
                     document.getElementById('statusMsg').innerText = "Master Admin has disabled access to the Card Maker Panel.";
 
-                    // Stop fetching users to save bandwidth
                     if (usersListener) {
                         usersListener(); 
                         usersListener = null;
@@ -208,12 +205,12 @@
                     // Condition 1: Check if already processed
                     if (u.sub_admin_processed === true) return;
 
-                    // Condition 2: Filter from Feb 28, 2026 onwards
-                    let userTime = u.timestamp;
-                    if (userTime && typeof userTime === 'object' && userTime.seconds) {
-                        userTime = userTime.seconds * 1000;
-                    }
-                    if (userTime && userTime < CUTOFF_DATE) return;
+                    // Condition 2: Filter by Serial Number (serial_number >= 270)
+                    // ডাটাবেজের ফিল্ড নাম অনুযায়ী 'serial_number' দিয়ে চেক করা হচ্ছে
+                    let slNumber = parseInt(u.serial_number, 10); 
+                    
+                    // যদি সিরিয়াল নাম্বার না থাকে অথবা ২৭০ এর নিচে হয়, তাহলে স্কিপ করবে
+                    if (isNaN(slNumber) || slNumber < 270) return; 
 
                     count++;
                     
@@ -228,7 +225,7 @@
                             
                             <div class="info-row">
                                 <div>
-                                    <span class="info-label">Name</span>
+                                    <span class="info-label">Name (SL: ${u.serial_number})</span>
                                     <div class="info-text" id="name-${id}">${u.name}</div>
                                 </div>
                                 <button class="action-btn ${actionState[id].name ? 'done' : ''}" 
@@ -262,7 +259,7 @@
                         <div class="empty-state">
                             <i class="fas fa-box-open"></i>
                             <h3>No Pending Work!</h3>
-                            <p>All approved users from Feb 28 have been processed.</p>
+                            <p>All approved users from SL 270 have been processed.</p>
                         </div>
                     `;
                 }
