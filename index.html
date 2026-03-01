@@ -46,8 +46,9 @@
 
         /* --- GRID CONTAINER --- */
         .container { padding: 20px; max-width: 1200px; margin: auto; }
-        .status-text { margin-bottom: 20px; color: #7f8c8d; font-size: 13px; text-align: center; background: white; padding: 10px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);}
-        
+        .status-text { margin-bottom: 20px; color: #7f8c8d; font-size: 13px; text-align: center; background: white; padding: 15px 10px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);}
+        .total-count-badge { display: inline-block; margin-top: 8px; font-size: 15px; color: #1976d2; font-weight: 700; background: #e3f2fd; padding: 5px 15px; border-radius: 20px; }
+
         .grid {
             display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;
         }
@@ -121,7 +122,9 @@
         <div class="container">
             <div class="status-text">
                 <i class="fas fa-info-circle"></i> Showing Approved Users from <b>SL 270</b> onwards.<br>
-                Complete all 3 actions (Copy Name, Copy Batch, Save Pic) to automate removal.
+                Complete all 3 actions (Copy Name, Copy Batch, Save Pic) to automate removal.<br>
+                <!-- NEW: Total Pending Count Badge -->
+                <span class="total-count-badge" id="totalCountDisplay">Total Pending: Loading...</span>
             </div>
 
             <div class="grid" id="userGrid">
@@ -196,7 +199,8 @@
             usersListener = onSnapshot(q, (snapshot) => {
                 const grid = document.getElementById('userGrid');
                 grid.innerHTML = "";
-                let count = 0;
+                
+                let validUsers =[]; // NEW: Array to store and sort users
 
                 snapshot.forEach(docSnap => {
                     const u = docSnap.data();
@@ -206,19 +210,29 @@
                     if (u.sub_admin_processed === true) return;
 
                     // Condition 2: Filter by Serial Number (serial_number >= 270)
-                    // ডাটাবেজের ফিল্ড নাম অনুযায়ী 'serial_number' দিয়ে চেক করা হচ্ছে
                     let slNumber = parseInt(u.serial_number, 10); 
                     
                     // যদি সিরিয়াল নাম্বার না থাকে অথবা ২৭০ এর নিচে হয়, তাহলে স্কিপ করবে
                     if (isNaN(slNumber) || slNumber < 270) return; 
 
-                    count++;
-                    
+                    // NEW: Push to array instead of rendering directly
+                    validUsers.push({ id, u, slNumber });
+                });
+
+                // NEW: Sort the array by Serial Number (Ascending)
+                validUsers.sort((a, b) => a.slNumber - b.slNumber);
+
+                // NEW: Update Total Count Display
+                document.getElementById('totalCountDisplay').innerText = `Total Pending: ${validUsers.length} Cards`;
+
+                // Render Sorted Cards
+                validUsers.forEach(userData => {
+                    const { id, u, slNumber } = userData;
+
                     if (!actionState[id]) {
                         actionState[id] = { name: false, batch: false, pic: false };
                     }
 
-                    // Render Card
                     grid.innerHTML += `
                         <div class="card" id="card-${id}">
                             <img src="${u.photo}" class="profile-pic" id="pic-${id}" alt="Profile">
@@ -254,7 +268,7 @@
                     `;
                 });
 
-                if (count === 0) {
+                if (validUsers.length === 0) {
                     grid.innerHTML = `
                         <div class="empty-state">
                             <i class="fas fa-box-open"></i>
