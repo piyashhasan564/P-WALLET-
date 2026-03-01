@@ -50,7 +50,7 @@
         .total-count-badge { display: inline-block; margin-top: 8px; font-size: 15px; color: #1976d2; font-weight: 700; background: #e3f2fd; padding: 5px 15px; border-radius: 20px; }
 
         .grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;
         }
 
         /* --- USER CARD --- */
@@ -60,7 +60,7 @@
             transition: all 0.4s ease; position: relative; overflow: hidden;
         }
         .card.completed {
-            transform: scale(0.9); opacity: 0; pointer-events: none;
+            transform: scale(0.9); opacity: 0; pointer-events: none; display: none;
         }
 
         .profile-pic {
@@ -70,30 +70,38 @@
 
         .info-row {
             display: flex; justify-content: space-between; align-items: center;
-            background: #f8f9fa; padding: 10px 15px; border-radius: 10px; margin-bottom: 10px;
+            background: #f8f9fa; padding: 10px 15px; border-radius: 10px; margin-bottom: 8px;
         }
-        .info-text { font-size: 14px; font-weight: 600; color: #2c3e50; text-align: left; }
-        .info-label { font-size: 10px; color: #95a5a6; display: block; text-transform: uppercase; }
+        .info-content { text-align: left; width: 100%; }
+        .info-text { font-size: 14px; font-weight: 600; color: #2c3e50; word-break: break-word; }
+        .info-label { font-size: 10px; color: #95a5a6; display: block; text-transform: uppercase; margin-bottom: 2px; }
 
         /* --- ACTION BUTTONS --- */
         .action-btn {
-            background: #e3f2fd; color: #1976d2; border: none; width: 35px; height: 35px;
+            background: #e3f2fd; color: #1976d2; border: none; width: 35px; height: 35px; min-width: 35px;
             border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center;
-            transition: 0.3s;
+            transition: 0.3s; margin-left: 10px;
         }
         .action-btn:hover { background: #1976d2; color: white; }
-        
-        .action-btn.done {
-            background: #e8f5e9; color: #27ae60; cursor: default; pointer-events: none;
-        }
+        .action-btn.done { background: #e8f5e9; color: #27ae60; cursor: default; }
 
+        /* Save Picture Button */
         .save-pic-btn {
-            width: 100%; padding: 12px; background: linear-gradient(135deg, #11998e, #38ef7d);
-            color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;
+            width: 100%; padding: 10px; background: #34495e;
+            color: white; border: none; border-radius: 10px; font-weight: 500; cursor: pointer;
             display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.3s;
+            margin-bottom: 10px; font-size: 13px;
         }
-        .save-pic-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(56, 239, 125, 0.4); }
-        .save-pic-btn.done { background: #bdc3c7; box-shadow: none; pointer-events: none; }
+        .save-pic-btn:hover { background: #2c3e50; }
+        
+        /* DONE BUTTON (New) */
+        .mark-done-btn {
+            width: 100%; padding: 12px; background: linear-gradient(135deg, #11998e, #38ef7d);
+            color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer;
+            display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.3s;
+            margin-top: 15px; font-size: 15px;
+        }
+        .mark-done-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(56, 239, 125, 0.4); }
 
         /* Empty State & Loader */
         .empty-state { text-align: center; padding: 50px 20px; color: #95a5a6; grid-column: 1/-1; }
@@ -104,7 +112,7 @@
 </head>
 <body>
 
-    <!-- DISABLED ACCESS SECTION (Shows if switch is OFF) -->
+    <!-- DISABLED ACCESS SECTION -->
     <div id="disabledSection">
         <div class="disabled-card">
             <i class="fas fa-lock loader" id="statusIcon"></i>
@@ -122,8 +130,8 @@
         <div class="container">
             <div class="status-text">
                 <i class="fas fa-info-circle"></i> Showing Approved Users from <b>SL 270</b> onwards.<br>
-                Complete all 3 actions (Copy Name, Copy Batch, Save Pic) to automate removal.<br>
-                <!-- NEW: Total Pending Count Badge -->
+                Use the buttons below to copy Number and Save Picture.<br>
+                <b>Click "DONE" when finished to remove the card.</b><br>
                 <span class="total-count-badge" id="totalCountDisplay">Total Pending: Loading...</span>
             </div>
 
@@ -151,46 +159,28 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // State Tracking for each user
-        let actionState = {};
         let usersListener = null;
 
-        // --- REALTIME ACCESS CHECK (MASTER ADMIN SWITCH) ---
+        // --- REALTIME ACCESS CHECK ---
         const configRef = doc(db, "config", "fees");
         onSnapshot(configRef, (configSnap) => {
             if (configSnap.exists()) {
                 const isActive = configSnap.data().sub_admin_login_active;
                 
                 if (isActive === true) {
-                    // Switch is ON: Allow Access
                     document.getElementById('disabledSection').style.display = 'none';
                     document.getElementById('mainContent').style.display = 'block';
-                    
-                    // Start loading users
-                    if (!usersListener) {
-                        loadApprovedUsers();
-                    }
+                    if (!usersListener) loadApprovedUsers();
                 } else {
-                    // Switch is OFF: Block Access
                     document.getElementById('mainContent').style.display = 'none';
                     document.getElementById('disabledSection').style.display = 'flex';
-                    
                     document.getElementById('statusIcon').className = "fas fa-ban";
                     document.getElementById('statusTitle').innerText = "Access Disabled";
-                    document.getElementById('statusMsg').innerText = "Master Admin has disabled access to the Card Maker Panel.";
-
-                    if (usersListener) {
-                        usersListener(); 
-                        usersListener = null;
-                    }
+                    document.getElementById('statusMsg').innerText = "Master Admin has disabled access.";
+                    if (usersListener) { usersListener(); usersListener = null; }
                 }
             }
-        }, (error) => {
-            console.error("Error fetching config:", error);
-            document.getElementById('statusTitle').innerText = "Connection Error";
-            document.getElementById('statusMsg').innerText = "Failed to connect to the database. Please check your internet.";
         });
-
 
         // --- LOAD DATA REALTIME ---
         function loadApprovedUsers() {
@@ -199,70 +189,77 @@
             usersListener = onSnapshot(q, (snapshot) => {
                 const grid = document.getElementById('userGrid');
                 grid.innerHTML = "";
-                
-                let validUsers =[]; // NEW: Array to store and sort users
+                let validUsers = []; 
 
                 snapshot.forEach(docSnap => {
                     const u = docSnap.data();
                     const id = docSnap.id;
 
-                    // Condition 1: Check if already processed
                     if (u.sub_admin_processed === true) return;
 
-                    // Condition 2: Filter by Serial Number (serial_number >= 270)
                     let slNumber = parseInt(u.serial_number, 10); 
-                    
-                    // যদি সিরিয়াল নাম্বার না থাকে অথবা ২৭০ এর নিচে হয়, তাহলে স্কিপ করবে
                     if (isNaN(slNumber) || slNumber < 270) return; 
 
-                    // NEW: Push to array instead of rendering directly
                     validUsers.push({ id, u, slNumber });
                 });
 
-                // NEW: Sort the array by Serial Number (Ascending)
                 validUsers.sort((a, b) => a.slNumber - b.slNumber);
-
-                // NEW: Update Total Count Display
                 document.getElementById('totalCountDisplay').innerText = `Total Pending: ${validUsers.length} Cards`;
 
-                // Render Sorted Cards
                 validUsers.forEach(userData => {
-                    const { id, u, slNumber } = userData;
-
-                    if (!actionState[id]) {
-                        actionState[id] = { name: false, batch: false, pic: false };
-                    }
+                    const { id, u } = userData;
+                    
+                    // Handle potential missing fields
+                    const phone = u.number || u.phone || "N/A";
+                    const address = u.address || u.village || "N/A";
 
                     grid.innerHTML += `
                         <div class="card" id="card-${id}">
-                            <img src="${u.photo}" class="profile-pic" id="pic-${id}" alt="Profile">
+                            <img src="${u.photo}" class="profile-pic" alt="Profile">
                             
+                            <!-- Save Picture Button -->
+                            <button class="save-pic-btn" onclick="savePicture('${id}', '${u.photo}', '${u.name.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-download"></i> Save Picture
+                            </button>
+
+                            <!-- Name (No Copy) -->
                             <div class="info-row">
-                                <div>
+                                <div class="info-content">
                                     <span class="info-label">Name (SL: ${u.serial_number})</span>
-                                    <div class="info-text" id="name-${id}">${u.name}</div>
+                                    <div class="info-text">${u.name}</div>
                                 </div>
-                                <button class="action-btn ${actionState[id].name ? 'done' : ''}" 
-                                        id="btn-name-${id}" onclick="copyData('${id}', 'name', '${u.name.replace(/'/g, "\\'")}')">
-                                    <i class="fas ${actionState[id].name ? 'fa-check' : 'fa-copy'}"></i>
-                                </button>
                             </div>
 
-                            <div class="info-row" style="margin-bottom: 20px;">
-                                <div>
+                            <!-- Batch (No Copy) -->
+                            <div class="info-row">
+                                <div class="info-content">
                                     <span class="info-label">Batch</span>
-                                    <div class="info-text" id="batch-${id}">${u.batch}</div>
+                                    <div class="info-text">${u.batch}</div>
                                 </div>
-                                <button class="action-btn ${actionState[id].batch ? 'done' : ''}" 
-                                        id="btn-batch-${id}" onclick="copyData('${id}', 'batch', '${u.batch}')">
-                                    <i class="fas ${actionState[id].batch ? 'fa-check' : 'fa-copy'}"></i>
+                            </div>
+
+                            <!-- Address (No Copy) -->
+                            <div class="info-row">
+                                <div class="info-content">
+                                    <span class="info-label">Address</span>
+                                    <div class="info-text">${address}</div>
+                                </div>
+                            </div>
+
+                            <!-- Number (With Copy Button) -->
+                            <div class="info-row">
+                                <div class="info-content">
+                                    <span class="info-label">Phone Number</span>
+                                    <div class="info-text">${phone}</div>
+                                </div>
+                                <button class="action-btn" onclick="copyNumber(this, '${phone}')">
+                                    <i class="fas fa-copy"></i>
                                 </button>
                             </div>
 
-                            <button class="save-pic-btn ${actionState[id].pic ? 'done' : ''}" 
-                                    id="btn-pic-${id}" onclick="savePicture('${id}', '${u.photo}', '${u.name.replace(/'/g, "\\'")}')">
-                                <i class="fas ${actionState[id].pic ? 'fa-check-circle' : 'fa-download'}"></i> 
-                                ${actionState[id].pic ? 'Picture Saved' : 'Save Picture'}
+                            <!-- MARK AS DONE BUTTON -->
+                            <button class="mark-done-btn" onclick="markAsDone('${id}')">
+                                <i class="fas fa-check-double"></i> DONE
                             </button>
                         </div>
                     `;
@@ -280,27 +277,29 @@
             });
         }
 
-        // --- ACTION: COPY DATA ---
-        window.copyData = function(id, type, text) {
+        // --- ACTION: COPY NUMBER ---
+        window.copyNumber = function(btn, text) {
             navigator.clipboard.writeText(text).then(() => {
-                const btn = document.getElementById(`btn-${type}-${id}`);
-                btn.classList.add('done');
+                // Change icon temporarily
+                const originalContent = btn.innerHTML;
                 btn.innerHTML = '<i class="fas fa-check"></i>';
-                showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} Copied!`);
+                btn.classList.add('done');
                 
-                actionState[id][type] = true;
-                checkCompletion(id);
+                showToast(`Number Copied!`);
+                
+                // Revert button after 2 seconds
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fas fa-copy"></i>';
+                    btn.classList.remove('done');
+                }, 2000);
+
             }).catch(err => {
-                console.error("Copy failed", err);
-                alert("Failed to copy text!");
+                alert("Failed to copy number!");
             });
         }
 
         // --- ACTION: SAVE PICTURE ---
         window.savePicture = async function(id, imageUrl, userName) {
-            const btn = document.getElementById(`btn-pic-${id}`);
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-
             try {
                 const response = await fetch(imageUrl); 
                 const blob = await response.blob(); 
@@ -314,48 +313,50 @@
                 document.body.removeChild(link); 
                 window.URL.revokeObjectURL(blobUrl);
 
-                btn.classList.add('done');
-                btn.innerHTML = '<i class="fas fa-check-circle"></i> Picture Saved';
                 showToast("Picture Downloaded!");
-
-                actionState[id].pic = true;
-                checkCompletion(id);
-
             } catch (error) {
                 window.open(imageUrl, '_blank'); 
-                btn.classList.add('done');
-                btn.innerHTML = '<i class="fas fa-check-circle"></i> Picture Saved';
-                actionState[id].pic = true;
-                checkCompletion(id);
+                showToast("Opened Picture in New Tab");
             }
         }
 
-        // --- LOGIC: CHECK IF ALL 3 ARE COMPLETED ---
-        async function checkCompletion(id) {
-            const state = actionState[id];
-            if (state.name && state.batch && state.pic) {
-                const card = document.getElementById(`card-${id}`);
-                card.classList.add('completed');
-                
-                Swal.fire({
-                    toast: true, position: 'top-end', showConfirmButton: false, timer: 2000,
-                    icon: 'success', title: 'Task Completed! Moving to next...'
-                });
-
-                try {
-                    const docRef = doc(db, "students", id);
-                    await updateDoc(docRef, { sub_admin_processed: true });
-                } catch (error) {
-                    console.error("Error updating DB:", error);
+        // --- ACTION: MARK AS DONE ---
+        window.markAsDone = function(id) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This card will be removed from the list!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, Done!'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    const card = document.getElementById(`card-${id}`);
+                    card.classList.add('completed'); // Hide visually
+                    
+                    try {
+                        const docRef = doc(db, "students", id);
+                        await updateDoc(docRef, { sub_admin_processed: true });
+                        
+                        Swal.fire({
+                            toast: true, position: 'top-end', showConfirmButton: false, timer: 1500,
+                            icon: 'success', title: 'Marked as Done!'
+                        });
+                    } catch (error) {
+                        console.error("Error updating DB:", error);
+                        card.classList.remove('completed'); // Show again if error
+                        alert("Database Error! Check internet.");
+                    }
                 }
-            }
+            })
         }
 
         // Toast Notification Helper
         function showToast(msg) {
             Swal.fire({
                 toast: true, position: 'bottom-end', showConfirmButton: false, timer: 1500,
-                icon: 'info', title: msg, background: '#333', color: '#fff'
+                icon: 'success', title: msg, background: '#333', color: '#fff'
             });
         }
 
