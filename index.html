@@ -1,610 +1,353 @@
-<!-- START OF FILE user Wallet .html -->
 <!DOCTYPE html>
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Wallet Pro (QR)</title>
-    <!-- Font Awesome -->
+    <title>Sub Admin - Reunion 2026</title>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- QR Code Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <!-- SWEET ALERT 2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: #f0f2f5; display: flex; justify-content: center; height: 100vh; margin: 0; }
-        .app-frame { width: 100%; max-width: 400px; background: white; height: 100%; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         
-        .auth-view { padding: 25px; overflow-y: auto; height: 100%; }
-        input, select { width: 100%; padding: 12px; margin: 5px 0 15px 0; border: 1px solid #ddd; border-radius: 8px; background: #fafafa; color: #333; }
-        label { font-size: 12px; font-weight: bold; color: #555; }
-        .btn-main { width: 100%; padding: 14px; background: #e2136e; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .link { text-align: center; color: #e2136e; margin-top: 20px; cursor: pointer; font-size: 14px; }
-
-        .header { background: #e2136e; padding: 25px; color: white; border-bottom-left-radius: 25px; border-bottom-right-radius: 25px; position: relative; }
-        .profile-head { display: flex; align-items: center; gap: 15px; }
-        .avatar { width: 60px; height: 60px; border-radius: 50%; border: 2px solid white; object-fit: cover; background: #ddd; }
-        
-        .header-icons { position: absolute; top: 20px; right: 20px; display: flex; gap: 15px; }
-        .icon-btn { cursor: pointer; font-size: 18px; color: white; }
-
-        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; padding-bottom: 100px; /* Space for bottom button */ }
-        .menu-card { background: #f9f9f9; padding: 20px; text-align: center; border-radius: 12px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .menu-card i { font-size: 24px; color: #e2136e; margin-bottom: 5px; }
-
-        .social-row { display: flex; gap: 15px; margin-top: 5px; }
-        .social-icon { font-size: 24px; text-decoration: none; }
-        .fa-facebook { color: #1877F2; } .fa-whatsapp { color: #25D366; } .fa-telegram { color: #0088cc; }
-
-        .loader-layer { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 200; flex-direction: column; justify-content: center; align-items: center; }
-        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #e2136e; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
-        
-        .modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 100; }
-        .modal-box { background: white; padding: 20px; width: 95%; max-height: 90%; border-radius: 10px; overflow-y: auto; display: flex; flex-direction: column; }
-        
-        .filter-bar { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 10px; }
-        .filter-btn { padding: 5px 12px; border: 1px solid #ddd; background: #fff; border-radius: 20px; font-size: 12px; white-space: nowrap; cursor: pointer; }
-        .filter-btn.active { background: #e2136e; color: white; border-color: #e2136e; }
-        .tx-list { flex-grow: 1; overflow-y: auto; }
-        .tx-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
-        
-        .info-row { border-bottom: 1px solid #eee; padding: 8px 0; font-size: 13px; }
-        
-        /* QR Specific Styles */
-        #qrDisplay { display: flex; justify-content: center; margin: 20px 0; }
-        
-        /* === SCANNER STYLES === */
-        #reader { width: 100%; border-radius: 10px; overflow: hidden; background: #000; }
-        #reader video { object-fit: cover; border-radius: 10px; }
-        #reader__dashboard_section_swaplink { display: none !important; }
-        #reader__dashboard_section_csr span { display: none !important; }
-        #reader button { background: #e2136e !important; color: white !important; border: none !important; padding: 8px 15px !important; border-radius: 20px !important; margin: 5px !important; font-size: 12px !important; cursor: pointer; }
-
-        /* === BOTTOM FLOATING BUTTON STYLE === */
-        .bottom-scan-area {
-            position: absolute; bottom: 25px; left: 0; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; z-index: 50;
+        body { 
+            background: #f0f2f5; 
+            min-height: 100vh;
         }
-        .scan-fab {
-            pointer-events: auto; width: 70px; height: 70px; background: #e2136e; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 30px; box-shadow: 0 4px 15px rgba(226, 19, 110, 0.4); border: 4px solid #fff; cursor: pointer; transition: transform 0.2s;
+
+        /* --- DISABLED ACCESS SECTION --- */
+        #disabledSection { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh; 
+            background: #f0f2f5; z-index: 9999; display: flex; 
+            justify-content: center; align-items: center; 
         }
-        .scan-fab:active { transform: scale(0.90); }
-        .scan-text {
-            color: #e2136e; font-weight: bold; font-size: 14px; margin-top: 5px; text-shadow: 0 1px 2px rgba(255,255,255,1); background: rgba(255,255,255,0.8); padding: 2px 8px; border-radius: 10px;
+        .disabled-card { 
+            background: white; padding: 40px 30px; border-radius: 20px; 
+            width: 90%; max-width: 400px; text-align: center; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .disabled-card i { font-size: 60px; color: #e74c3c; margin-bottom: 20px; }
+        .disabled-card h2 { color: #2c3e50; margin-bottom: 10px; font-weight: 700; }
+        .disabled-card p { color: #7f8c8d; font-size: 14px; line-height: 1.5; }
+
+        /* --- HEADER --- */
+        #mainContent { display: none; padding-bottom: 50px; }
+        .header {
+            background: white; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            display: flex; justify-content: center; align-items: center;
+            position: sticky; top: 0; z-index: 100;
+        }
+        .header h3 { color: #2c3e50; font-weight: 700; font-size: 20px; }
+
+        /* --- GRID CONTAINER --- */
+        .container { padding: 20px; max-width: 1200px; margin: auto; }
+        .status-text { margin-bottom: 20px; color: #7f8c8d; font-size: 13px; text-align: center; background: white; padding: 10px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);}
+        
+        .grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;
+        }
+
+        /* --- USER CARD --- */
+        .card {
+            background: white; border-radius: 15px; padding: 20px; text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05); border: 1px solid #eee;
+            transition: all 0.4s ease; position: relative; overflow: hidden;
+        }
+        .card.completed {
+            transform: scale(0.9); opacity: 0; pointer-events: none;
+        }
+
+        .profile-pic {
+            width: 100px; height: 100px; border-radius: 50%; object-fit: cover;
+            border: 3px solid #f0f2f5; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .info-row {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #f8f9fa; padding: 10px 15px; border-radius: 10px; margin-bottom: 10px;
+        }
+        .info-text { font-size: 14px; font-weight: 600; color: #2c3e50; text-align: left; }
+        .info-label { font-size: 10px; color: #95a5a6; display: block; text-transform: uppercase; }
+
+        /* --- ACTION BUTTONS --- */
+        .action-btn {
+            background: #e3f2fd; color: #1976d2; border: none; width: 35px; height: 35px;
+            border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center;
+            transition: 0.3s;
+        }
+        .action-btn:hover { background: #1976d2; color: white; }
+        
+        .action-btn.done {
+            background: #e8f5e9; color: #27ae60; cursor: default; pointer-events: none;
+        }
+
+        .save-pic-btn {
+            width: 100%; padding: 12px; background: linear-gradient(135deg, #11998e, #38ef7d);
+            color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;
+            display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.3s;
+        }
+        .save-pic-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(56, 239, 125, 0.4); }
+        .save-pic-btn.done { background: #bdc3c7; box-shadow: none; pointer-events: none; }
+
+        /* Empty State & Loader */
+        .empty-state { text-align: center; padding: 50px 20px; color: #95a5a6; grid-column: 1/-1; }
+        .empty-state i { font-size: 50px; margin-bottom: 15px; color: #bdc3c7; }
+        .loader { font-size: 24px; color: #3498db; margin-bottom: 15px; }
+
     </style>
 </head>
 <body>
 
-<div class="app-frame">
-    <div id="loader" class="loader-layer"><div class="spinner"></div><p id="loadText" style="color:#e2136e; font-weight:bold; margin-top:10px;">Please wait...</p></div>
-
-    <!-- PENDING -->
-    <div id="pendingView" style="display:none; height:100%; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:30px;">
-        <i class="fas fa-clock" style="font-size:50px; color:#f39c12; margin-bottom:20px;"></i>
-        <h2>Approval Pending</h2>
-        <button class="btn-main" style="background:#333;" onclick="location.reload()">Refresh</button>
-    </div>
-
-    <!-- AUTH -->
-    <div id="authView" class="auth-view">
-        <center><h2 style="color:#e2136e;">My Wallet</h2></center>
-        <div id="loginForm">
-            <label>Phone Number</label> 
-            <input type="text" id="lPhone" placeholder="01XXXXXXXXX" onfocus="clearMask()">
-            <label>PIN Code</label> 
-            <input type="password" id="lPin" placeholder="****">
-            <button class="btn-main" onclick="doLogin()">LOGIN</button>
-            <div class="link" onclick="switchAuth('reg')">Create New Account</div>
-        </div>
-        <div id="regForm" style="display:none;">
-            <h3>Register</h3>
-            <label>Full Name</label> <input type="text" id="rName">
-            <label>Username</label> <input type="text" id="rUser">
-            <label>Phone</label> <input type="text" id="rPhone">
-            <label>Email</label> <input type="email" id="rEmail">
-            <label>Address</label> <input type="text" id="rAddr">
-            <label>Social Links</label>
-            <input type="text" id="rFb" placeholder="Facebook Link">
-            <input type="text" id="rWa" placeholder="WhatsApp Number">
-            <input type="text" id="rTg" placeholder="Telegram Username">
-            <label>Set PIN</label> <input type="password" id="rPin">
-            <label>Profile Photo</label> <input type="file" id="rPic" accept="image/*">
-            <label>NID Photo</label> <input type="file" id="rNid" accept="image/*">
-            <button class="btn-main" onclick="doRegister()">REGISTER</button>
-            <div class="link" onclick="switchAuth('login')">Back to Login</div>
+    <!-- DISABLED ACCESS SECTION (Shows if switch is OFF) -->
+    <div id="disabledSection">
+        <div class="disabled-card">
+            <i class="fas fa-lock loader" id="statusIcon"></i>
+            <h2 id="statusTitle">Checking Access...</h2>
+            <p id="statusMsg">Please wait while we verify your access.</p>
         </div>
     </div>
 
-    <!-- WALLET -->
-    <div id="walletView" style="display:none; height:100%; flex-direction:column; position:relative;">
+    <!-- MAIN CONTENT -->
+    <div id="mainContent">
         <div class="header">
-            <div class="header-icons">
-                <i class="fas fa-qrcode icon-btn" onclick="showMyQr()" title="My QR"></i>
-                <i class="fas fa-sign-out-alt icon-btn" onclick="doLogout()" title="Logout"></i>
-            </div>
-            <div class="profile-head">
-                <img id="dPic" class="avatar" src="">
-                <div><h4 id="dName" style="margin:0;">User</h4><small id="dUser" style="color:#ffd1df;">@username</small></div>
-            </div>
-            <center><h1 id="dBal" style="margin-top:15px; margin-bottom:0;">৳ 0.00</h1></center>
-        </div>
-        <div class="menu-grid">
-            <div class="menu-card" onclick="openModal('profile')"><i class="fas fa-user-circle"></i><br>Profile</div>
-            <div class="menu-card" onclick="openTransactions()"><i class="fas fa-list-ul"></i><br>Transactions</div>
-            <div class="menu-card" onclick="openModal('redeem')"><i class="fas fa-gift"></i><br>Redeem</div>
-            <div class="menu-card" onclick="openModal('withdraw')"><i class="fas fa-arrow-circle-up"></i><br>Withdraw</div>
-            <div class="menu-card" onclick="openModal('send')"><i class="fas fa-paper-plane"></i><br>Send Money</div>
-            <div class="menu-card" onclick="openModal('request')"><i class="fas fa-hand-holding-usd"></i><br>Request</div>
+            <h3><i class="fas fa-id-card"></i> Card Maker Panel</h3>
         </div>
 
-        <!-- BOTTOM QR BUTTON -->
-        <div class="bottom-scan-area">
-            <div class="scan-fab" onclick="openScanner()">
-                <i class="fas fa-qrcode"></i>
+        <div class="container">
+            <div class="status-text">
+                <i class="fas fa-info-circle"></i> Showing Approved Users from Feb 28, 2026.<br>
+                Complete all 3 actions (Copy Name, Copy Batch, Save Pic) to automate removal.
             </div>
-            <div class="scan-text">Scan QR</div>
+
+            <div class="grid" id="userGrid">
+                <!-- Cards will be injected here -->
+            </div>
         </div>
     </div>
 
-    <!-- TRANSACTION MODAL -->
-    <div id="transModal" class="modal">
-        <div class="modal-box">
-            <h3 style="color:#e2136e; margin-top:0;">Transactions</h3>
-            <div class="filter-bar">
-                <button class="filter-btn active" onclick="filterHist('all', this)">All</button>
-                <button class="filter-btn" onclick="filterHist('redeem', this)">Redeem</button>
-                <button class="filter-btn" onclick="filterHist('cashin', this)">Cash In</button>
-                <button class="filter-btn" onclick="filterHist('withdraw', this)">Withdraw</button>
-                <button class="filter-btn" onclick="filterHist('receive', this)">Received</button>
-            </div>
-            <div id="fullTxList" class="tx-list"></div>
-            <button class="btn-main" style="background:#555; margin-top:10px;" onclick="document.getElementById('transModal').style.display='none'">CLOSE</button>
-        </div>
-    </div>
+    <!-- FIREBASE SCRIPTS (Auth Removed to Prevent Crash) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, query, where, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    <!-- MY QR MODAL -->
-    <div id="myQrModal" class="modal">
-        <div class="modal-box" style="text-align:center;">
-            <h3 style="color:#e2136e;">My QR Code</h3>
-            <div id="qrDisplay"></div>
-            <p>Scan this to send me money</p>
-            <h4 id="qrUserDisplay" style="margin:0; color:#333;"></h4>
-            <button class="btn-main" style="background:#555; margin-top:20px;" onclick="document.getElementById('myQrModal').style.display='none'">CLOSE</button>
-        </div>
-    </div>
-
-    <!-- SCANNER MODAL -->
-    <div id="scannerModal" class="modal">
-        <div class="modal-box" style="padding:15px; background: #fff;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <h3 style="color:#e2136e; margin:0;">Scan & Pay</h3>
-                <i class="fas fa-times" style="font-size:20px; cursor:pointer; color:#555;" onclick="closeScanner()"></i>
-            </div>
-            <div id="reader" style="width: 100%; min-height: 250px;"></div>
-        </div>
-    </div>
-
-    <!-- ACTION MODAL -->
-    <div id="actionModal" class="modal">
-        <div class="modal-box" style="height:auto;">
-            <h3 id="mTitle" style="color:#e2136e; margin-top:0;">Action</h3>
-            
-            <div id="secRedeem" style="display:none;"><input type="text" id="inCode" placeholder="Enter Code"></div>
-            
-            <div id="secSend" style="display:none;">
-                <label>Receiver Info</label>
-                <input type="text" id="inReceiver" placeholder="Receiver Username">
-                <input type="number" id="inAmountS" placeholder="Amount" oninput="calcSendFee()">
-                <p id="sendFeeDisplay" style="color:orange; font-size:12px; font-weight:bold;"></p>
-                <small id="sendLimitMsg" style="color:#888; display:block; margin-bottom:10px;"></small>
-            </div>
-
-            <div id="secRequest" style="display:none;"><input type="text" id="inReqUser" placeholder="From Username"><input type="number" id="inReqAmount" placeholder="Amount"></div>
-            
-            <div id="secWithdraw" style="display:none;">
-                <label>Method:</label><select id="inWMethod"><option>Loading...</option></select>
-                <input type="text" id="inWNumber" placeholder="Wallet Number">
-                <input type="number" id="inAmountW" placeholder="Amount" oninput="calcWithdrawFee()">
-                <p id="withdrawFeeDisplay" style="color:red; font-size:12px; font-weight:bold;"></p>
-                <small id="withdrawLimitMsg" style="color:#888; display:block; margin-bottom:10px;"></small>
-            </div>
-
-            <div id="secProfile" style="display:none;">
-                <div class="info-row"><b>Name:</b> <span id="vpName"></span></div>
-                <div class="info-row"><b>Phone:</b> <span id="vpPhone"></span></div>
-                <div class="info-row"><b>Email:</b> <span id="vpEmail"></span></div>
-                <div class="info-row"><b>Address:</b> <span id="vpAddr"></span></div>
-                <div class="info-row"><b>Social:</b> <div class="social-row" id="vpSocial"></div></div>
-                <button class="btn-main" style="background:#3498db" onclick="openModal('profileEdit')">EDIT PROFILE</button>
-            </div>
-
-            <div id="secProfileEdit" style="display:none;">
-                <label>Email</label> <input type="text" id="epEmail">
-                <label>Facebook</label> <input type="text" id="epFb">
-                <label>WhatsApp</label> <input type="text" id="epWa">
-                <label>Telegram</label> <input type="text" id="epTg">
-            </div>
-
-            <button id="btnConfirm" class="btn-main" onclick="execute()">CONFIRM</button>
-            <button class="btn-main" style="background:#555; margin-top:5px;" onclick="closeModal()">CLOSE</button>
-        </div>
-    </div>
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-
-<script>
-    const IMGBB_KEY = "d685822691566e39accb630d6ef7a6d9"; 
-    const firebaseConfig = {
-        apiKey: "AIzaSyAp3HBNW9WcvClNRIbDZxx3f8BGRW3AQqQ",
-        authDomain: "walletcoinbalanceel.firebaseapp.com",
-        projectId: "walletcoinbalanceel",
-        storageBucket: "walletcoinbalanceel.firebasestorage.app",
-        messagingSenderId: "296384724834",
-        appId: "1:296384724834:web:7af5b0acbff821076c363b"
-    };
-
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    
-    let curPhone = null, curUser = null, curAction = "";
-    let storedRealPhone = null;
-    let html5QrcodeScanner = null;
-    
-    // Default Settings
-    let settings = { 
-        minSend: 10, maxSend: 25000, 
-        minWithdraw: 100, maxWithdraw: 10000, 
-        withdrawFee: 2.0, 
-        sendSlabs: [] 
-    };
-
-    function maskNum(n) {
-        if(!n || n.length < 5) return n;
-        return n.substring(0, 3) + "******" + n.substring(n.length - 2);
-    }
-
-    window.onload = function() {
-        const activeUser = localStorage.getItem('walletUser');
-        const savedPhone = localStorage.getItem('savedPhone');
-        if (activeUser) { curPhone = activeUser; fetchUser(activeUser); } 
-        else if (savedPhone) { storedRealPhone = savedPhone; document.getElementById('lPhone').value = maskNum(savedPhone); }
-    };
-
-    function clearMask() { const field = document.getElementById('lPhone'); if(field.value.includes('******')) field.value = ""; }
-    function switchAuth(v) { document.getElementById('loginForm').style.display=v==='login'?'block':'none'; document.getElementById('regForm').style.display=v==='reg'?'block':'none'; }
-    function loader(show, text) { const l=document.getElementById('loader'); if(show){document.getElementById('loadText').innerText=text; l.style.display='flex';}else{l.style.display='none';} }
-
-    async function uploadImg(file) {
-        const formData = new FormData(); formData.append("image", file);
-        const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, { method: "POST", body: formData });
-        const data = await res.json();
-        if(data.success) return data.data.url; throw new Error("Image Upload Failed");
-    }
-
-    async function doRegister() {
-        const d = {
-            name: document.getElementById('rName').value, username: document.getElementById('rUser').value,
-            phone: document.getElementById('rPhone').value, email: document.getElementById('rEmail').value,
-            address: document.getElementById('rAddr').value,
-            social: { fb: document.getElementById('rFb').value, wa: document.getElementById('rWa').value, tg: document.getElementById('rTg').value },
-            pin: document.getElementById('rPin').value
+        // --- FIREBASE CONFIGURATION ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyB-n-SgnGwn1P9b-1Xkv3S5QM4U1zHa5nQ",
+            authDomain: "bb-high-school-reunion-2026.firebaseapp.com",
+            projectId: "bb-high-school-reunion-2026",
+            storageBucket: "bb-high-school-reunion-2026.firebasestorage.app",
+            messagingSenderId: "54413925090",
+            appId: "1:54413925090:web:b6ac44faf6313dc19b1cbb"
         };
-        const pic = document.getElementById('rPic').files[0]; const nid = document.getElementById('rNid').files[0];
-        if(!d.phone || !d.username || !d.pin || !pic) return alert("Fill details");
-        loader(true, "Processing...");
-        try {
-            const snap = await db.collection('users').where('username', '==', d.username).get();
-            if(!snap.empty) { loader(false); return alert("Username Taken!"); }
-            const pUrl = await uploadImg(pic); const nUrl = await uploadImg(nid);
-            await db.collection('users').doc(d.phone).set({ ...d, profilePic: pUrl, nidPic: nUrl, balance: 0, status: 'pending', joined: new Date().toLocaleString(), history: [] });
-            loader(false); alert("Wait for Admin."); switchAuth('login');
-        } catch(e) { loader(false); alert(e.message); }
-    }
 
-    function doLogin() {
-        let inputPhone = document.getElementById('lPhone').value;
-        const pin = document.getElementById('lPin').value;
-        if(inputPhone.includes('******') && storedRealPhone) inputPhone = storedRealPhone;
-        if(!inputPhone || !pin) return;
-        loader(true, "Login...");
-        db.collection('users').doc(inputPhone).get().then(doc => {
-            loader(false);
-            if(doc.exists) {
-                const u = doc.data();
-                if(u.pin === pin) {
-                    if(u.status === 'pending') { document.getElementById('authView').style.display='none'; document.getElementById('pendingView').style.display='flex'; }
-                    else if(u.status === 'active') { localStorage.setItem('walletUser', inputPhone); localStorage.setItem('savedPhone', inputPhone); curPhone=inputPhone; curUser=u; initWallet(); }
-                    else alert(u.status);
-                } else alert("Wrong PIN");
-            } else alert("User not found");
-        }).catch(()=>loader(false));
-    }
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-    function fetchUser(p) {
-        db.collection('users').doc(p).get().then(doc => {
-            if(doc.exists && doc.data().status === 'active') { curPhone=p; curUser=doc.data(); initWallet(); }
-            else { localStorage.removeItem('walletUser'); document.getElementById('authView').style.display='block'; }
-        });
-    }
+        // State Tracking for each user: { userId: { name: false, batch: false, pic: false } }
+        let actionState = {};
+        const CUTOFF_DATE = new Date('2026-02-28T00:00:00').getTime();
+        let usersListener = null;
 
-    function doLogout() { if(confirm("Logout?")) { localStorage.removeItem('walletUser'); location.reload(); } }
-
-    function initWallet() {
-        document.getElementById('authView').style.display='none'; document.getElementById('walletView').style.display='flex';
-        document.getElementById('dName').innerText = curUser.name; document.getElementById('dUser').innerText = "@"+curUser.username;
-        document.getElementById('dPic').src = curUser.profilePic;
-        
-        // FETCH SETTINGS
-        db.collection('admin').doc('settings').onSnapshot(doc => {
-            if(doc.exists) {
-                const s = doc.data();
-                settings = { ...settings, ...s };
+        // --- REALTIME ACCESS CHECK (MASTER ADMIN SWITCH) ---
+        const configRef = doc(db, "config", "fees");
+        onSnapshot(configRef, (configSnap) => {
+            if (configSnap.exists()) {
+                const isActive = configSnap.data().sub_admin_login_active;
                 
-                // Update UI Limits Text
-                document.getElementById('withdrawLimitMsg').innerText = `Limit: ${settings.minWithdraw} - ${settings.maxWithdraw} Tk`;
-                document.getElementById('sendLimitMsg').innerText = `Limit: ${settings.minSend} - ${settings.maxSend} Tk`;
-                
-                const methods = s.methods || [];
-                const sel = document.getElementById('inWMethod'); sel.innerHTML = "";
-                methods.forEach(m => sel.innerHTML += `<option value="${m}">${m}</option>`);
+                if (isActive === true) {
+                    // Switch is ON: Allow Access
+                    document.getElementById('disabledSection').style.display = 'none';
+                    document.getElementById('mainContent').style.display = 'block';
+                    
+                    // Start loading users if not already started
+                    if (!usersListener) {
+                        loadApprovedUsers();
+                    }
+                } else {
+                    // Switch is OFF: Block Access
+                    document.getElementById('mainContent').style.display = 'none';
+                    document.getElementById('disabledSection').style.display = 'flex';
+                    
+                    // Update disabled message
+                    document.getElementById('statusIcon').className = "fas fa-ban";
+                    document.getElementById('statusTitle').innerText = "Access Disabled";
+                    document.getElementById('statusMsg').innerText = "Master Admin has disabled access to the Card Maker Panel.";
+
+                    // Stop fetching users to save bandwidth
+                    if (usersListener) {
+                        usersListener(); 
+                        usersListener = null;
+                    }
+                }
             }
+        }, (error) => {
+            console.error("Error fetching config:", error);
+            document.getElementById('statusTitle').innerText = "Connection Error";
+            document.getElementById('statusMsg').innerText = "Failed to connect to the database. Please check your internet.";
         });
-        
-        db.collection('users').doc(curPhone).onSnapshot(doc => {
-            curUser = doc.data();
-            document.getElementById('dBal').innerText = `৳ ${curUser.balance.toFixed(2)}`;
-        });
-    }
 
-    // === FEE CALCULATORS ===
-    function calcSendFee() {
-        const amt = parseFloat(document.getElementById('inAmountS').value);
-        if(!amt) { document.getElementById('sendFeeDisplay').innerText = "Fee: 0 Tk"; return 0; }
-        
-        let fee = 0;
-        if(settings.sendSlabs && settings.sendSlabs.length > 0) {
-            for(let slab of settings.sendSlabs) {
-                if(amt >= slab.from && amt <= slab.to) {
-                    fee = slab.fee;
-                    break;
+
+        // --- LOAD DATA REALTIME ---
+        function loadApprovedUsers() {
+            const q = query(collection(db, "students"), where("payment_status", "==", "Approved"));
+            
+            usersListener = onSnapshot(q, (snapshot) => {
+                const grid = document.getElementById('userGrid');
+                grid.innerHTML = "";
+                let count = 0;
+
+                snapshot.forEach(docSnap => {
+                    const u = docSnap.data();
+                    const id = docSnap.id;
+
+                    // Condition 1: Check if already processed
+                    if (u.sub_admin_processed === true) return;
+
+                    // Condition 2: Filter from Feb 28, 2026 onwards
+                    let userTime = u.timestamp;
+                    if (userTime && typeof userTime === 'object' && userTime.seconds) {
+                        userTime = userTime.seconds * 1000;
+                    }
+                    if (userTime && userTime < CUTOFF_DATE) return;
+
+                    count++;
+                    
+                    if (!actionState[id]) {
+                        actionState[id] = { name: false, batch: false, pic: false };
+                    }
+
+                    // Render Card
+                    grid.innerHTML += `
+                        <div class="card" id="card-${id}">
+                            <img src="${u.photo}" class="profile-pic" id="pic-${id}" alt="Profile">
+                            
+                            <div class="info-row">
+                                <div>
+                                    <span class="info-label">Name</span>
+                                    <div class="info-text" id="name-${id}">${u.name}</div>
+                                </div>
+                                <button class="action-btn ${actionState[id].name ? 'done' : ''}" 
+                                        id="btn-name-${id}" onclick="copyData('${id}', 'name', '${u.name.replace(/'/g, "\\'")}')">
+                                    <i class="fas ${actionState[id].name ? 'fa-check' : 'fa-copy'}"></i>
+                                </button>
+                            </div>
+
+                            <div class="info-row" style="margin-bottom: 20px;">
+                                <div>
+                                    <span class="info-label">Batch</span>
+                                    <div class="info-text" id="batch-${id}">${u.batch}</div>
+                                </div>
+                                <button class="action-btn ${actionState[id].batch ? 'done' : ''}" 
+                                        id="btn-batch-${id}" onclick="copyData('${id}', 'batch', '${u.batch}')">
+                                    <i class="fas ${actionState[id].batch ? 'fa-check' : 'fa-copy'}"></i>
+                                </button>
+                            </div>
+
+                            <button class="save-pic-btn ${actionState[id].pic ? 'done' : ''}" 
+                                    id="btn-pic-${id}" onclick="savePicture('${id}', '${u.photo}', '${u.name.replace(/'/g, "\\'")}')">
+                                <i class="fas ${actionState[id].pic ? 'fa-check-circle' : 'fa-download'}"></i> 
+                                ${actionState[id].pic ? 'Picture Saved' : 'Save Picture'}
+                            </button>
+                        </div>
+                    `;
+                });
+
+                if (count === 0) {
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-box-open"></i>
+                            <h3>No Pending Work!</h3>
+                            <p>All approved users from Feb 28 have been processed.</p>
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        // --- ACTION: COPY DATA ---
+        window.copyData = function(id, type, text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById(`btn-${type}-${id}`);
+                btn.classList.add('done');
+                btn.innerHTML = '<i class="fas fa-check"></i>';
+                showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} Copied!`);
+                
+                actionState[id][type] = true;
+                checkCompletion(id);
+            }).catch(err => {
+                console.error("Copy failed", err);
+                alert("Failed to copy text!");
+            });
+        }
+
+        // --- ACTION: SAVE PICTURE ---
+        window.savePicture = async function(id, imageUrl, userName) {
+            const btn = document.getElementById(`btn-pic-${id}`);
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+            try {
+                const response = await fetch(imageUrl); 
+                const blob = await response.blob(); 
+                const blobUrl = window.URL.createObjectURL(blob);
+                
+                const link = document.createElement('a'); 
+                link.href = blobUrl; 
+                link.download = `${userName.replace(/\s+/g, '_')}_Profile.jpg`;
+                document.body.appendChild(link); 
+                link.click(); 
+                document.body.removeChild(link); 
+                window.URL.revokeObjectURL(blobUrl);
+
+                btn.classList.add('done');
+                btn.innerHTML = '<i class="fas fa-check-circle"></i> Picture Saved';
+                showToast("Picture Downloaded!");
+
+                actionState[id].pic = true;
+                checkCompletion(id);
+
+            } catch (error) {
+                window.open(imageUrl, '_blank'); 
+                btn.classList.add('done');
+                btn.innerHTML = '<i class="fas fa-check-circle"></i> Picture Saved';
+                actionState[id].pic = true;
+                checkCompletion(id);
+            }
+        }
+
+        // --- LOGIC: CHECK IF ALL 3 ARE COMPLETED ---
+        async function checkCompletion(id) {
+            const state = actionState[id];
+            if (state.name && state.batch && state.pic) {
+                const card = document.getElementById(`card-${id}`);
+                card.classList.add('completed');
+                
+                Swal.fire({
+                    toast: true, position: 'top-end', showConfirmButton: false, timer: 2000,
+                    icon: 'success', title: 'Task Completed! Moving to next...'
+                });
+
+                try {
+                    const docRef = doc(db, "students", id);
+                    await updateDoc(docRef, { sub_admin_processed: true });
+                } catch (error) {
+                    console.error("Error updating DB:", error);
                 }
             }
         }
-        document.getElementById('sendFeeDisplay').innerText = `Fee: ${fee} Tk (Total: ${amt+fee})`;
-        return fee;
-    }
 
-    function calcWithdrawFee() {
-        const amt = parseFloat(document.getElementById('inAmountW').value);
-        if(!amt) { document.getElementById('withdrawFeeDisplay').innerText = ""; return 0; }
-        
-        const fee = amt * (settings.withdrawFee / 100);
-        document.getElementById('withdrawFeeDisplay').innerText = `Fee (${settings.withdrawFee}%): ${fee.toFixed(2)} Tk (Total: ${(amt+fee).toFixed(2)})`;
-        return fee;
-    }
-
-    // === QR CODE FUNCTIONS ===
-    function showMyQr() {
-        document.getElementById('myQrModal').style.display = 'flex';
-        const qrContainer = document.getElementById('qrDisplay');
-        qrContainer.innerHTML = ""; 
-        document.getElementById('qrUserDisplay').innerText = "@" + curUser.username;
-        new QRCode(qrContainer, { text: curUser.username, width: 150, height: 150 });
-    }
-
-    function openScanner() {
-        document.getElementById('scannerModal').style.display = 'flex';
-        const config = { fps: 20, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 };
-        html5QrcodeScanner = new Html5QrcodeScanner("reader", config, false);
-        html5QrcodeScanner.render(onScanSuccess);
-    }
-
-    function onScanSuccess(decodedText) {
-        closeScanner();
-        openModal('send');
-        document.getElementById('inReceiver').value = decodedText;
-    }
-
-    function closeScanner() {
-        if(html5QrcodeScanner) {
-            html5QrcodeScanner.clear().then(() => {
-                document.getElementById('scannerModal').style.display = 'none';
-                html5QrcodeScanner = null;
-            }).catch(() => document.getElementById('scannerModal').style.display = 'none');
-        } else {
-            document.getElementById('scannerModal').style.display = 'none';
+        // Toast Notification Helper
+        function showToast(msg) {
+            Swal.fire({
+                toast: true, position: 'bottom-end', showConfirmButton: false, timer: 1500,
+                icon: 'info', title: msg, background: '#333', color: '#fff'
+            });
         }
-    }
 
-    function openTransactions() {
-        document.getElementById('transModal').style.display = 'flex';
-        filterHist('all', document.querySelector('.filter-btn.active'));
-    }
-
-    function filterHist(type, btn) {
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        if(btn) btn.classList.add('active');
-        const list = document.getElementById('fullTxList'); list.innerHTML = "";
-        const hist = curUser.history || [];
-        const filtered = type === 'all' ? hist : hist.filter(h => {
-            if(type === 'redeem') return h.type.includes('Redeem');
-            if(type === 'cashin') return h.type.includes('Cash In');
-            if(type === 'withdraw') return h.type.includes('Withdraw');
-            if(type === 'receive') return h.type.includes('Received');
-            return false;
-        });
-        if(filtered.length === 0) list.innerHTML = "<p style='text-align:center; color:#888'>No transactions found.</p>";
-        [...filtered].reverse().forEach(h => {
-            const color = h.amount > 0 ? 'green' : (h.type.includes('Withdraw') || h.type.includes('Sent') ? 'red' : 'orange');
-            const sign = h.amount > 0 ? '+' : '';
-            let statusBadge = "";
-            if(h.type.includes('Withdraw')) {
-                const s = h.status || 'Pending';
-                let c = s === 'Approved' ? 'green' : (s === 'Rejected' ? 'red' : 'orange');
-                statusBadge = `<br><span style="color:${c};font-size:11px">${s}</span>`;
-            }
-            list.innerHTML += `<div class="tx-item"><div><b>${h.title}</b><br><small style="color:#888">${h.date}</small>${statusBadge}</div><div style="color:${color}; font-weight:bold;">${sign}${h.amount}</div></div>`;
-        });
-    }
-
-    function openModal(t) {
-        curAction = t;
-        document.getElementById('actionModal').style.display = 'flex';
-        ['secRedeem','secSend','secRequest','secWithdraw','secProfile','secProfileEdit'].forEach(id => document.getElementById(id).style.display = 'none');
-        document.getElementById('btnConfirm').style.display = 'block';
-
-        if(t === 'redeem') document.getElementById('secRedeem').style.display = 'block';
-        else if(t === 'send') document.getElementById('secSend').style.display = 'block';
-        else if(t === 'request') document.getElementById('secRequest').style.display = 'block';
-        else if(t === 'withdraw') document.getElementById('secWithdraw').style.display = 'block';
-        else if(t === 'profile') {
-            document.getElementById('secProfile').style.display = 'block';
-            document.getElementById('btnConfirm').style.display = 'none';
-            document.getElementById('vpName').innerText = curUser.name;
-            document.getElementById('vpPhone').innerText = maskNum(curUser.phone);
-            document.getElementById('vpEmail').innerText = curUser.email;
-            document.getElementById('vpAddr').innerText = curUser.address;
-            document.getElementById('vpSocial').innerHTML = `
-                <a href="${curUser.social.fb}" class="social-icon"><i class="fab fa-facebook"></i></a>
-                <a href="https://wa.me/${curUser.social.wa}" class="social-icon"><i class="fab fa-whatsapp"></i></a>
-                <a href="https://t.me/${curUser.social.tg}" class="social-icon"><i class="fab fa-telegram"></i></a>
-            `;
-        } else if(t === 'profileEdit') {
-            document.getElementById('secProfileEdit').style.display = 'block';
-            document.getElementById('epEmail').value = curUser.email;
-            document.getElementById('epFb').value = curUser.social.fb;
-            document.getElementById('epWa').value = curUser.social.wa;
-            document.getElementById('epTg').value = curUser.social.tg;
-        }
-        document.getElementById('mTitle').innerText = t.toUpperCase();
-    }
-    function closeModal() { document.getElementById('actionModal').style.display = 'none'; }
-
-    async function execute() {
-        if(curAction === 'redeem') {
-            const c = document.getElementById('inCode').value.trim();
-            if(!c) return;
-            try {
-                await db.runTransaction(async t => {
-                    const cRef = db.collection('codes').doc(c);
-                    const cd = await t.get(cRef);
-                    if(!cd.exists || cd.data().status !== 'active') throw "Invalid Code";
-                    const uRef = db.collection('users').doc(curPhone);
-                    const ud = await t.get(uRef);
-                    const amt = cd.data().amount;
-                    const aRef = db.collection('admin').doc('stats');
-                    const ad = await t.get(aRef);
-                    const curCI = ad.exists ? (ad.data().totalCashIn || 0) : 0;
-                    t.set(aRef, { totalCashIn: curCI + amt }, {merge: true});
-                    const hist = ud.data().history || [];
-                    hist.push({ title: 'Redeemed Code', type: 'Redeem Code', amount: amt, date: new Date().toLocaleString() });
-                    t.update(cRef, { status: 'used', redeemedBy: { username: curUser.username, phone: curPhone }, redeemedAt: new Date().toLocaleString() });
-                    t.update(uRef, { balance: ud.data().balance + amt, history: hist });
-                });
-                alert("Redeemed!"); closeModal();
-            } catch(e) { alert(e); }
-        } else if(curAction === 'withdraw') {
-            const m = document.getElementById('inWMethod').value;
-            const num = document.getElementById('inWNumber').value;
-            const amt = parseFloat(document.getElementById('inAmountW').value);
-            if(!num || !amt) return;
-            
-            // Limit Check
-            if(amt < settings.minWithdraw || amt > settings.maxWithdraw) return alert(`Amount must be between ${settings.minWithdraw} and ${settings.maxWithdraw}`);
-
-            const fee = calcWithdrawFee();
-            const totalDeduct = amt + fee;
-            
-            if(!confirm(`Withdraw: ${amt} Tk\nFee (${settings.withdrawFee}%): ${fee.toFixed(2)} Tk\nTotal: ${totalDeduct.toFixed(2)} Tk\nProceed?`)) return;
-            
-            try {
-                await db.runTransaction(async t => {
-                    const uRef = db.collection('users').doc(curPhone);
-                    const ud = await t.get(uRef);
-                    if(ud.data().balance < totalDeduct) throw "Low Balance";
-                    const tid = Date.now().toString();
-                    const wRef = db.collection('withdrawals').doc(tid);
-                    t.set(wRef, { userId: curPhone, userName: curUser.name, userPhone: curPhone, profilePic: curUser.profilePic, method: m, number: num, amount: amt, fee: fee, totalDeduct: totalDeduct, status: 'Pending', date: new Date().toLocaleString(), timestamp: tid });
-                    const hist = ud.data().history || [];
-                    hist.push({ title: `Withdraw: ${m} (${maskNum(num)})`, type: 'Withdraw', amount: -totalDeduct, status: 'Pending', txId: tid, fee: fee, date: new Date().toLocaleString() });
-                    t.update(uRef, { balance: ud.data().balance - totalDeduct, history: hist });
-                });
-                alert("Withdraw Request Sent!"); closeModal();
-            } catch(e) { alert(e); }
-        } else if(curAction === 'profileEdit') {
-            db.collection('users').doc(curPhone).update({
-                email: document.getElementById('epEmail').value,
-                social: { fb: document.getElementById('epFb').value, wa: document.getElementById('epWa').value, tg: document.getElementById('epTg').value }
-            }).then(() => { alert("Updated!"); closeModal(); });
-        } else if(curAction === 'send') {
-             const rec = document.getElementById('inReceiver').value.trim();
-             const amt = parseFloat(document.getElementById('inAmountS').value);
-             if(!rec || !amt) return;
-
-             // Limit Check
-             if(amt < settings.minSend || amt > settings.maxSend) return alert(`Amount must be between ${settings.minSend} and ${settings.maxSend}`);
-
-             const fee = calcSendFee();
-             const totalDeduct = amt + fee;
-
-             if(!confirm(`Send: ${amt} Tk\nFee: ${fee} Tk\nTotal: ${totalDeduct} Tk\nProceed?`)) return;
-
-             try {
-                 const q = await db.collection('users').where('username', '==', rec).get();
-                 if(q.empty) throw "User not found";
-                 const rPhone = q.docs[0].id;
-                 await db.runTransaction(async t => {
-                     const uRef = db.collection('users').doc(curPhone);
-                     const rRef = db.collection('users').doc(rPhone);
-                     const aRef = db.collection('admin').doc('stats');
-
-                     const sd = await t.get(uRef);
-                     if(sd.data().balance < totalDeduct) throw "Low Balance";
-                     
-                     const rd = await t.get(rRef);
-                     const ad = await t.get(aRef);
-                     const curFees = ad.exists ? (ad.data().totalFees || 0) : 0;
-
-                     const sHist = sd.data().history || [];
-                     sHist.push({ title: 'Sent to @'+rec, type: 'Sent Money', amount: -totalDeduct, fee: fee, date: new Date().toLocaleString() });
-                     
-                     const rHist = rd.data().history || [];
-                     rHist.push({ title: 'From @'+curUser.username, type: 'Received Money', amount: amt, date: new Date().toLocaleString() });
-                     
-                     t.update(uRef, { balance: sd.data().balance - totalDeduct, history: sHist });
-                     t.update(rRef, { balance: rd.data().balance + amt, history: rHist });
-                     t.set(aRef, { totalFees: curFees + fee }, {merge:true});
-                 });
-                 alert("Sent!"); closeModal();
-             } catch(e) { alert(e); }
-        } else if(curAction === 'request') {
-             const target = document.getElementById('inReqUser').value.trim();
-             const amt = parseFloat(document.getElementById('inReqAmount').value);
-             if(!target || !amt) return;
-             try {
-                 const q = await db.collection('users').where('username', '==', target).get();
-                 if(q.empty) throw "User not found";
-                 const tPhone = q.docs[0].id;
-                 const mRef = db.collection('users').doc(curPhone);
-                 const tRef = db.collection('users').doc(tPhone);
-                 db.runTransaction(async t => {
-                     const md = await t.get(mRef);
-                     const td = await t.get(tRef);
-                     const mh = md.data().history || [];
-                     mh.push({ title: 'Req sent to @'+target, type: 'Request Sent', amount: amt, date: new Date().toLocaleString() });
-                     const th = td.data().history || [];
-                     th.push({ title: 'Req from @'+curUser.username, type: 'Request Received', amount: amt, date: new Date().toLocaleString() });
-                     t.update(mRef, {history:mh}); t.update(tRef, {history:th});
-                 });
-                 alert("Request Sent!"); closeModal();
-             } catch(e){ alert(e); }
-        }
-    }
-</script>
+    </script>
 </body>
 </html>
